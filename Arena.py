@@ -16,7 +16,7 @@ class BattleMediator:
 
     @staticmethod
     def print_fighter_status(fighters: tuple[Fighter, ...]) -> None:
-        print("  ---v---   ".join([f"{f.name} ({f.awareness.name}): {f.hp} HP" for f in fighters]))
+        print("  ---v---   ".join([f"{f.name} ({f._awareness.name}): {f.hp} HP" for f in fighters]))
         print()
 
     @staticmethod
@@ -48,7 +48,7 @@ class BattleMediator:
 
         if attack_roll > defense_roll:
             print(f"{attacker.name} hit {defender.name} with {attack.name} (rolling for damage)")
-            match attacker.awareness:
+            match attacker._awareness:
                 case FighterAwareness.FOCUSED:
                     damage = attacker.attack_with_advantage(attack)
                 case FighterAwareness.DISTRACTED:
