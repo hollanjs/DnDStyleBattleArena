@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
+from enum import Enum
 import random
 import uuid
-import copy
 
 random.seed(int(uuid.uuid4()))
 
@@ -46,9 +46,7 @@ class Attack(ABC):
 
     def dice_with_extra_die(self) -> list[Die]:
         die_type = type(self.dice[0])
-        dice_arr = copy.deepcopy(self.dice)
-        dice_arr.append(die_type())
-        return dice_arr
+        return self.dice + [die_type()]
 
     def check_advantage(self, rolls: list[int]) -> list[int]:
         self.print_roll_results("Roll with advantage", rolls)
@@ -116,15 +114,42 @@ class ThornWhip(Attack):
         self.name = "Thorn Whip"
         self.dice = [SixSidedDie() for _ in range(4)]
 
+FighterAwareness = Enum("FighterAwareness", ['FOCUSED', 'PRESENT', 'DISTRACTED'])
+
 class Fighter:
+    _distracted_chance: float
+    _focused_chance: float
+
+    _present_chance: float
+
     name: str
-    HP: int
-    attacks = []
+    hp: int
+    d20: TwentySidedDie
+    awareness: FighterAwareness
+    attacks: list[Attack]
 
     def __init__(self, name: str, hp: int):
         self.name = name
-        self.HP = hp
-        self.D20 = TwentySidedDie()
+        self.hp = hp
+        self.attacks = []
+        self.d20 = TwentySidedDie()
+        self.awareness = FighterAwareness.PRESENT
+        self._distracted_chance = random.randrange(1,4)/10
+        self._focused_chance = random.randrange(1,4)/10
+        self._present_chance = 1.0 - (self._distracted_chance + self._focused_chance)
+
+    def update_awareness(self) -> None:
+        weights = [self._focused_chance, self._present_chance, self._distracted_chance]
+
+        current_awareness = self.awareness
+        new_awareness = random.choices(list(FighterAwareness), weights=weights, k=1)[0]
+
+        if new_awareness != current_awareness:
+            self.set_awareness(new_awareness)
+            print(f"{self.name} became {self.awareness.name.lower()}...")
+
+    def set_awareness(self, awareness: FighterAwareness) -> None:
+        self.awareness = awareness
 
     def learn_attack(self, attack: Attack) -> None:
         if attack not in self.attacks:
@@ -145,11 +170,19 @@ class Fighter:
             print(f"Casting {attack.name} with disadvantage")
             return attack.roll_damage_with_disadvantage()
 
-    def roll_D20(self):
-        return self.D20.roll()
+    def roll_d20(self):
+        return self.d20.roll()
 
     def __str__(self):
-        return f'Figher({self.name}, {self.HP} HP, Attacks: {",".join([atk.__str__() for atk in self.attacks])}'
+        _string = f'''Fighter: {self.name}
+    {self.hp} hp
+    awareness: {self.awareness.name}
+    Attacks:
+'''
+        for atk in self.attacks:
+            _string += f"\t\t{atk}\n"
+
+        return _string
 
 class BattleMediator:
     _battle_in_progress = False
@@ -161,8 +194,9 @@ class BattleMediator:
         return cls._instance
 
     @staticmethod
-    def print_fighter_hit_points(fighters: tuple[Fighter, ...]) -> None:
-        print(",".join([f"{f.name}: {f.HP}HP" for f in fighters]))
+    def print_fighter_status(fighters: tuple[Fighter, ...]) -> None:
+        print("  ---v---   ".join([f"{f.name} ({f.awareness.name}): {f.hp} HP" for f in fighters]))
+        print()
 
     @staticmethod
     def announce_fighters(*fighters) -> None:
@@ -172,7 +206,7 @@ class BattleMediator:
 
     @staticmethod
     def roll_initiative(fighter1: Fighter, fighter2: Fighter) -> tuple[Fighter, Fighter]:
-        if fighter1.roll_D20() > fighter2.roll_D20():
+        if fighter1.roll_d20() > fighter2.roll_d20():
             return (fighter1, fighter2)
         else:
             return (fighter2, fighter1)
@@ -188,18 +222,25 @@ class BattleMediator:
 
     @staticmethod
     def attack(attacker: Fighter, defender: Fighter, attack: Attack):
-        attack_roll = attacker.roll_D20()
-        defense_roll = defender.roll_D20()
+        attack_roll = attacker.roll_d20()
+        defense_roll = defender.roll_d20()
 
         if attack_roll > defense_roll:
             print(f"{attacker.name} hit {defender.name} with {attack.name} (rolling for damage)")
-            damage = attacker.attack(attack)
+            match attacker.awareness:
+                case FighterAwareness.FOCUSED:
+                    damage = attacker.attack_with_advantage(attack)
+                case FighterAwareness.DISTRACTED:
+                    damage = attacker.attack_with_disadvantage(attack)
+                case _:
+                    damage = attacker.attack(attack)
+
             print(f"{attacker.name}'s {attack.name} caused {damage} damage to {defender.name}")
-            defender.HP -= damage
+            defender.hp -= damage
         else:
             print(f"{attacker.name} missed {defender.name} with {attack.name}")
 
-        if defender.HP <= 0:
+        if defender.hp <= 0:
             BattleMediator.end_battle()
             print(f"{defender.name} has perished in battle against {attacker.name}")
 
@@ -208,11 +249,13 @@ class BattleMediator:
         BattleMediator.announce_fighters(fighter1, fighter2)
         attacker, defender = BattleMediator.roll_initiative(fighter1, fighter2)
         while BattleMediator._battle_in_progress:
+            attacker.update_awareness()
             BattleMediator.attack(attacker, defender, random.choice(attacker.attacks))
-            BattleMediator.print_fighter_hit_points((attacker, defender))
+            BattleMediator.print_fighter_status((attacker, defender))
             attacker, defender = defender, attacker
 
 if __name__ == '__main__':
+
     # init fighters
     fighter1 = Fighter("Chrulk", 100)
     fighter2 = Fighter("Steve", 100)
