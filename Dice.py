@@ -6,11 +6,12 @@ import uuid
 
 random.seed(int(uuid.uuid4()))
 
-class Die():
+class Die(ABC):
     name: str
     face_count: int
     rolled: int
     
+    @abstractmethod
     def __init__(self, face_count: str):
         self.face_count = face_count
         self.name = f'd{face_count}'
