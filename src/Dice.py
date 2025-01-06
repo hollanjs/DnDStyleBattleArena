@@ -25,7 +25,21 @@ class Die(ABC):
         return self.name
     
     def __repr__(self):
-        return f'Die("{self.name}")'
+        return f'Die("{self.name}, face_count: {self.face_count}, rolled: {self.rolled}")'
+    
+    def __add__(self, other) -> int:
+        if issubclass(type(other), self.__class__):
+            return self.rolled + other.rolled
+        elif isinstance(other, int):
+            return self.rolled + other
+        else:
+            raise ValueError(f"unsupported (+) types: '{type(self)}' and '{type(other)}'")
+        
+    def __radd__(self, other):
+        if (other == 0):
+            return self
+        else:
+            return self.__add__(other)
 
 class FourSidedDie(Die):
     def __init__(self):
