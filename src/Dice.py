@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 from typing import Self
 import random
 import uuid
@@ -6,26 +7,17 @@ import uuid
 
 random.seed(int(uuid.uuid4()))
 
+@dataclass(order=True, frozen=True)
 class Die(ABC):
-    name: str
-    face_count: int
-    rolled: int
+    name: str = field(compare=False, init=False)
+    face_count: int = field(compare=False)
+    rolled: int = field(default=0, compare=True)
     
-    @abstractmethod
-    def __init__(self, face_count: str):
-        self.face_count = face_count
-        self.name = f'd{face_count}'
-        self.rolled = 0
-        
-    def roll(self) -> int:
-        self.rolled = random.randint(1, self.face_count)
-        return self.rolled
+    def __post_init__(self):
+        object.__setattr__(self, "name", f'd{self.face_count}')
     
     def __str__(self):
         return self.name
-    
-    def __repr__(self):
-        return f'Die("{self.name}, face_count: {self.face_count}, rolled: {self.rolled}")'
     
     def __add__(self, other) -> int:
         if issubclass(type(other), self.__class__):
@@ -40,34 +32,38 @@ class Die(ABC):
             return self
         else:
             return self.__add__(other)
+        
+    def roll(self) -> int:
+        object.__setattr__(self, "rolled", random.randint(1, self.face_count))
+        return self.rolled
 
+@dataclass(order=True, frozen=True)
 class FourSidedDie(Die):
-    def __init__(self):
-        super().__init__(4)
+    face_count: int = 4
 
+@dataclass(order=True, frozen=True)
 class SixSidedDie(Die):
-    def __init__(self):
-        super().__init__(6)
+    face_count: int = 6
 
+@dataclass(order=True, frozen=True)
 class EightSidedDie(Die):
-    def __init__(self):
-        super().__init__(8)
+    face_count: int = 8
 
+@dataclass(order=True, frozen=True)
 class TenSidedDie(Die):
-    def __init__(self):
-        super().__init__(10)
+    face_count: int = 10
 
+@dataclass(order=True, frozen=True)
 class TwelveSidedDie(Die):
-    def __init__(self):
-        super().__init__(12)
+    face_count: int = 12
 
+@dataclass(order=True, frozen=True)
 class TwentySidedDie(Die):
-    def __init__(self):
-        super().__init__(20)
+    face_count: int = 20
     
+@dataclass(order=True, frozen=True)
 class OneHundredSidedDie(Die):
-    def __init__(self):
-        super().__init__(100)
+    face_count: int = 100
 
 class RollManager():
     """

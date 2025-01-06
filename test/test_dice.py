@@ -16,7 +16,6 @@ class DieTypeAndPropertyTestCases(unittest.TestCase):
         test.assertEqual(die.face_count, num_faces)
         test.assertEqual(die.name, f'd{num_faces}')
         test.assertEqual(die.__str__(), f'd{num_faces}')
-        test.assertEqual(die.__repr__(), f'Die("d{num_faces}, face_count: {num_faces}, rolled: 0")')
         
         #test rolled property updates when rolled
         roll_result = die.roll()
