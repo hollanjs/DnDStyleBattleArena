@@ -20,6 +20,12 @@ class Die(ABC):
     def roll(self) -> int:
         self.rolled = random.randint(1, self.face_count)
         return self.rolled
+    
+    def __str__(self):
+        return self.name
+    
+    def __repr__(self):
+        return f'Die("{self.name}")'
 
 class FourSidedDie(Die):
     def __init__(self):
