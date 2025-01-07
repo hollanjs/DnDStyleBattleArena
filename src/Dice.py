@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from typing import Self, List, Dict, Any
 import random
 import uuid
+import copy
 
 
 random.seed(int(uuid.uuid4()))
@@ -123,13 +124,41 @@ class Dice():
     die_type: Die
     count: int
     dice: List[Die] = field(init=False)
-    roll_history: List[Dict[str, Any]] = field(init=False)
+    roll_history: List[List[Die]] = field(init=False, repr=False)
 
-    def __post_init__(self):
+    def __str__(self) -> str:
+        return self.pprint_dice(self.current_roll)
+
+    def __post_init__(self) -> None:
         self.dice = [self.die_type() for _ in range(self.count)]
+        self.roll_history = [copy.deepcopy(self.dice)]
+
+    @classmethod
+    def pprint_dice(self, dice: List[Die]) -> None:
+        print(f"{len(dice)}{dice[0].name}, [{", ".join([str(d.rolled) for d in dice])}]")
+
+    def pprint_roll_history(self) -> None:
+        for roll in self.roll_history:
+            self.pprint_dice(roll)
+
+    @property
+    def current_roll(self) -> List[Die]:
+        return self.roll_history[-1]
+    
+    @property
+    def previous_roll(self) -> List[Die]:
+        if len(self.roll_history) > 1:
+            return self.roll_history[-2]
+        else:
+            raise IndexError("Not enough roll history to obtain a previous roll. Roll the dice, then try previous_roll() again")
+
+    def __len__(self) -> int:
+        return len(self.dice)
 
     def roll(self) -> List[int]:
-        return [_.roll() for _ in self.dice]
+        [_.roll() for _ in self.dice]
+        self.roll_history.append(copy.deepcopy(self.dice))
+        return self.current_roll
 
 
 class RollManager():

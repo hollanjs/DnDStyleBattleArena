@@ -235,6 +235,19 @@ class DiceTests(unittest.TestCase):
     def test_dice_init(self):
         self.assertIsInstance(self.dice, Dice)
 
+    def test_getting_len_of_dice(self):
+        self.assertEqual(len(self.dice), 3)
+
+    def test_dice_print(self):
+        self.assertEqual(self.dice.pprint_dice(self.dice.current_roll), "3d6, [0, 0, 0]")
+
+    def test_dice_print_after_roll(self):
+        #set dice roll state manually for assertion
+        object.__setattr__(self.dice.dice[0], "rolled", 4)
+        object.__setattr__(self.dice.dice[1], "rolled", 2)
+        object.__setattr__(self.dice.dice[2], "rolled", 5)
+        self.assertEqual(self.dice.__str__(), "3d6, [4, 2, 5]")
+
     def test_dice_count(self):
         self.assertEqual(len(self.dice.dice), 3)
         with self.assertRaises(IndexError):
@@ -265,7 +278,40 @@ class DiceTests(unittest.TestCase):
         self.assertGreater(self.dice.dice[1].rolled, 0)
         self.assertGreater(self.dice.dice[2].rolled, 0)
 
-        
+    def test_rolling_updates_history(self):
+        # reset self.dice
+        self.setUp()
+        start_len = 1
+
+        self.assertEqual([d.rolled for d in self.dice.current_roll], [0, 0, 0])
+        self.assertEqual(len(self.dice.roll_history), start_len)
+        self.assertEqual(self.dice.current_roll, self.dice.dice)
+        with self.assertRaises(IndexError):
+            self.dice.previous_roll
+
+        start_len += 1
+        self.dice.roll()
+        self.assertEqual(len(self.dice.roll_history), start_len)
+        self.assertNotEqual([d.rolled for d in self.dice.current_roll], [0, 0, 0])
+        self.assertEqual([d.rolled for d in self.dice.previous_roll], [0, 0, 0])
+        self.assertIsNotNone(self.dice.previous_roll)
+        self.assertNotEqual(self.dice.current_roll, self.dice.previous_roll)
+        self.assertEqual(self.dice.current_roll, self.dice.dice)
+
+        #do it a couple more times to validate roll history updates
+        for i in range(5):
+            start_len += 1
+            self.dice.roll()
+            self.assertEqual(len(self.dice.roll_history), start_len)
+            self.assertNotEqual([d.rolled for d in self.dice.current_roll], [0, 0, 0])
+            self.assertNotEqual([d.rolled for d in self.dice.previous_roll], [0, 0, 0])
+            self.assertNotEqual(self.dice.current_roll, self.dice.previous_roll)
+            self.assertEqual(self.dice.current_roll, self.dice.dice)
+
+    
+    @unittest.skip
+    def test_adding_die_of_same_type_to_dice(self):
+        self.dice.add(SixSidedDie())
 
 
 class TestRollManager(unittest.TestCase):
