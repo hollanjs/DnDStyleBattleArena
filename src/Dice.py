@@ -18,20 +18,72 @@ class Die(ABC):
     
     def __str__(self):
         return self.name
-    
+
     def __add__(self, other) -> int:
-        if issubclass(type(other), self.__class__):
+        if other == 0:
+            return self.rolled
+        elif issubclass(type(other), self.__class__):
             return self.rolled + other.rolled
         elif isinstance(other, int):
             return self.rolled + other
         else:
             raise ValueError(f"unsupported (+) types: '{type(self)}' and '{type(other)}'")
         
-    def __radd__(self, other):
-        if (other == 0):
-            return self
+    def __radd__(self, other) -> int:
+        return self.__add__(other)
+
+    def __sub__(self, other) -> int:
+        if other == 0:
+            return self.rolled
+        elif issubclass(type(other), self.__class__):
+            return self.rolled - other.rolled
+        elif isinstance(other, int):
+            return self.rolled - other
         else:
-            return self.__add__(other)
+            raise ValueError(f"unsupported (-) types: '{type(self)}' and '{type(other)}'")
+        
+    def __rsub__(self, other) -> int:
+        if (other == 0):
+            return self.rolled
+        elif issubclass(type(other), self.__class__):
+            return other.rolled - self.rolled
+        elif isinstance(other, int):
+            return other - self.rolled
+        else:
+            raise ValueError(f"unsupported (-) types: '{type(self)}' and '{type(other)}'") 
+
+    def __mul__(self, other) -> int:
+        if other == 0:
+            return 0
+        elif issubclass(type(other), self.__class__):
+            return self.rolled * other.rolled
+        elif isinstance(other, int):
+            return self.rolled * other
+        else:
+            raise ValueError(f"unsupported (*) types: '{type(self)}' and '{type(other)}'")
+        
+    def __rmul__(self, other) -> int:
+        return self.__mul__(other)
+
+    def __truediv__(self, other) -> int:
+        if other == 0:
+            raise ZeroDivisionError(f"{self.rolled} cannot divided by 0")
+        elif issubclass(type(other), self.__class__):
+            return self.rolled // other.rolled
+        elif isinstance(other, int):
+            return self.rolled // other
+        else:
+            raise ValueError(f"unsupported (/) types: '{type(self)}' and '{type(other)}'")
+        
+    def __rtruediv__(self, other) -> int:
+        if self.rolled == 0:
+            raise ZeroDivisionError(f"Cannot divided by 0")
+        elif issubclass(type(other), self.__class__):
+            return other.rolled // self.rolled
+        elif isinstance(other, int):
+            return other // self.rolled
+        else:
+            raise ValueError(f"unsupported (/) types: '{type(self)}' and '{type(other)}'")
         
     def roll(self) -> int:
         object.__setattr__(self, "rolled", random.randint(1, self.face_count))

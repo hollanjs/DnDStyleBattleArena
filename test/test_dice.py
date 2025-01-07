@@ -91,48 +91,142 @@ class DieMethodTestCases(unittest.TestCase):
         self.four_sided_b = FourSidedDie()
         self.four_sided_c = FourSidedDie()
 
+        self.twenty_sided_a = TwentySidedDie()
+        self.twenty_sided_b = TwentySidedDie()
 
+
+    # ##########################################################################
+    # DIE LOGIC
+    def test_comparing_dice(self):
+        die1 = SixSidedDie()
+        object.__setattr__(die1, "rolled", 2)
+        die2 = SixSidedDie()
+        object.__setattr__(die2, "rolled", 4)
+        die3 = SixSidedDie()
+        object.__setattr__(die3, "rolled", 4)
+        
+        self.assertEqual(die2, die3)
+        self.assertNotEqual(die1, die2)
+        self.assertGreater(die2, die1)
+        self.assertGreaterEqual(die2, die1)
+        self.assertGreaterEqual(die3, die2)
+        self.assertLess(die1, die2)
+        self.assertLessEqual(die3, die2)
+        self.assertLessEqual(die1, die2)
+        self.assertNotEqual(die1, die2)
+
+
+    # ##########################################################################
+    # SUMMING DIE
     def test_adding_die_rolls_together_from_same_dietype(self):
         """test adding same type dice objects returns total of both dice's rolls"""
-        (_.roll() for _ in [self.four_sided_a, self.four_sided_b])
-        roll_total = self.four_sided_a.rolled + self.four_sided_b.rolled
-        self.assertEqual(self.four_sided_a + self.four_sided_b, roll_total)
+        object.__setattr__(self.four_sided_a, "rolled", 4)
+        object.__setattr__(self.four_sided_b, "rolled", 3)
+        self.assertEqual(self.four_sided_a + self.four_sided_b, 7)
 
 
     def test_adding_die_and_int(self):
         """test adding dice object with a whole number returns the dice's roll plus the number"""
-        self.four_sided_a.roll()
-        self.assertEqual(self.four_sided_a + 5, self.four_sided_a.rolled + 5)
+        object.__setattr__(self.four_sided_a, "rolled", 4)
+        self.assertEqual(self.four_sided_a + 5, 9)
+
+
+    def test_adding_int_and_die(self):
+        """test adding a whole number with a die returns the sum of the number and dice's roll"""
+        object.__setattr__(self.four_sided_a, "rolled", 4)
+        self.assertEqual(5 + self.four_sided_a, 9)
 
 
     def test_summing_array_of_dice(self):
         """test ability to use sum() on an array of dice to get the roll total of all dice in array"""
+        object.__setattr__(self.four_sided_a, "rolled", 4)
+        object.__setattr__(self.four_sided_b, "rolled", 3)
+        object.__setattr__(self.four_sided_c, "rolled", 2)
         dice_arr = [self.four_sided_a, self.four_sided_b, self.four_sided_c]
-        # roll dice just because
-        [_.roll() for _ in dice_arr]
-        manual_roll_total = dice_arr[0].rolled + dice_arr[1].rolled + dice_arr[2].rolled
-        self.assertEqual(sum(dice_arr), manual_roll_total)
+        self.assertEqual(sum(dice_arr), 9)
 
 
     def test_summing_array_of_dice_and_ints(self):
+        object.__setattr__(self.four_sided_a, "rolled", 4)
+        object.__setattr__(self.four_sided_b, "rolled", 3)
+        object.__setattr__(self.four_sided_c, "rolled", 2)
         # [die, int, die, int, die]
         dice_arr = [self.four_sided_a, 5, self.four_sided_b, 2, self.four_sided_c]
-        # rolling dice returns ints, so we can use the below to get an int array to sum and check against
-        summed_array = sum([_.roll() if issubclass(type(_), Die) else _ for _ in dice_arr])
-        self.assertEqual(sum(dice_arr), summed_array)
+        self.assertEqual(sum(dice_arr), 16)
 
 
-    def test_subtracting_die_rolls_together_from_same_dietype(self):
-        # do same tests for subtraction that you did for addition
-        pass
+    # ##########################################################################
+    # SUBTRACTING DIE
+    def test_subtracting_die_rolls_from_same_dietype(self):
+        """test subtracting same type dice objects returns difference of both dice's rolls"""
+        object.__setattr__(self.four_sided_a, "rolled", 4)
+        object.__setattr__(self.four_sided_b, "rolled", 1)
+        self.assertEqual(self.four_sided_a - self.four_sided_b, 3)
 
-    def test_multiplying_die_rolls_together_from_same_dietype(self):
-        # do same tests for multiplication that you did for addition
-        pass
+
+    def test_subtracting_die_and_int(self):
+        """test subtracting dice object with a whole number returns the dice's roll minus the number"""
+        object.__setattr__(self.four_sided_a, "rolled", 4)
+        self.assertEqual(self.four_sided_a - 2, 2)
 
     
+    def test_subtracting_int_and_die(self):
+        """test subtracting int with a die returns the number minus the dice's roll"""
+        object.__setattr__(self.four_sided_a, "rolled", 3)
+        self.assertEqual(4 - self.four_sided_a, 1)
+
+
+    # ##########################################################################
+    # MULTIPLYING DIE
+    def test_multiplying_die_rolls_from_same_dietype(self):
+        """test multiplying same type dice objects returns the product of both dice's rolls"""
+        object.__setattr__(self.four_sided_a, "rolled", 3)
+        object.__setattr__(self.four_sided_b, "rolled", 2)
+        self.assertEqual(self.four_sided_a * self.four_sided_b, 6)
+
+
+    def test_multiplying_die_and_int(self):
+        """test multiplying dice object with a whole number returns the dice's roll times the number"""
+        object.__setattr__(self.four_sided_a, "rolled", 3)
+        self.assertEqual(self.four_sided_a * 4, 12)
 
     
+    def test_multiplying_int_and_die(self):
+        """test multiplying int with dice object returns the product of the int and the dice's roll"""
+        object.__setattr__(self.four_sided_a, "rolled", 2)
+        self.assertEqual(4 * self.four_sided_a, 8)
+    
+    
+    # ##########################################################################
+    # DIVIDING DIE
+    #   default is floor divide (we need whole numbers)
+    def test_dividing_die_rolls_from_same_dietype(self):
+        """test dividing same type dice objects returns the division of dice's rolls"""
+        object.__setattr__(self.twenty_sided_a, "rolled", 12)
+        object.__setattr__(self.twenty_sided_b, "rolled", 4)
+        self.assertEqual(self.twenty_sided_a / self.twenty_sided_b, 3)
+
+        object.__setattr__(self.twenty_sided_a, "rolled", 17)
+        object.__setattr__(self.twenty_sided_b, "rolled", 4)
+        self.assertEqual(self.twenty_sided_a / self.twenty_sided_b, 4)
+
+
+    def test_dividing_die_and_int(self):
+        """test dividing dice object with a whole number returns the dice's roll divided by the number"""
+        object.__setattr__(self.twenty_sided_a, "rolled", 15)
+        self.assertEqual(self.twenty_sided_a / 2, 7)
+
+    
+    def test_dividing_int_and_die(self):
+        """test dividing int with dice object returns the result of int divided by dice's roll"""
+        object.__setattr__(self.twenty_sided_a, "rolled", 5)
+        self.assertEqual(19 / self.twenty_sided_a, 3)
+
+    
+    def test_setting_ceiling_divide(self):
+        raise NotImplementedError("Create tests for test_setting_ceiling_divide")
+
+
 class TestRollManager(unittest.TestCase):
     pass
         
