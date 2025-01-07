@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Self
+from typing import Self, List, Dict, Any
 import random
 import uuid
 
@@ -22,7 +22,7 @@ class Die(ABC):
     def __add__(self, other) -> int:
         if other == 0:
             return self.rolled
-        elif issubclass(type(other), self.__class__):
+        elif isinstance(other, self.__class__):
             return self.rolled + other.rolled
         elif isinstance(other, int):
             return self.rolled + other
@@ -35,7 +35,7 @@ class Die(ABC):
     def __sub__(self, other) -> int:
         if other == 0:
             return self.rolled
-        elif issubclass(type(other), self.__class__):
+        elif isinstance(other, self.__class__):
             return self.rolled - other.rolled
         elif isinstance(other, int):
             return self.rolled - other
@@ -45,7 +45,7 @@ class Die(ABC):
     def __rsub__(self, other) -> int:
         if (other == 0):
             return self.rolled
-        elif issubclass(type(other), self.__class__):
+        elif isinstance(other, self.__class__):
             return other.rolled - self.rolled
         elif isinstance(other, int):
             return other - self.rolled
@@ -55,7 +55,7 @@ class Die(ABC):
     def __mul__(self, other) -> int:
         if other == 0:
             return 0
-        elif issubclass(type(other), self.__class__):
+        elif isinstance(other, self.__class__):
             return self.rolled * other.rolled
         elif isinstance(other, int):
             return self.rolled * other
@@ -68,7 +68,7 @@ class Die(ABC):
     def __truediv__(self, other) -> int:
         if other == 0:
             raise ZeroDivisionError(f"{self.rolled} cannot divided by 0")
-        elif issubclass(type(other), self.__class__):
+        elif isinstance(other, self.__class__):
             return self.rolled // other.rolled
         elif isinstance(other, int):
             return self.rolled // other
@@ -78,7 +78,7 @@ class Die(ABC):
     def __rtruediv__(self, other) -> int:
         if self.rolled == 0:
             raise ZeroDivisionError(f"Cannot divided by 0")
-        elif issubclass(type(other), self.__class__):
+        elif isinstance(other, self.__class__):
             return other.rolled // self.rolled
         elif isinstance(other, int):
             return other // self.rolled
@@ -117,6 +117,21 @@ class TwentySidedDie(Die):
 class OneHundredSidedDie(Die):
     face_count: int = 100
 
+
+@dataclass
+class Dice():
+    die_type: Die
+    count: int
+    dice: List[Die] = field(init=False)
+    roll_history: List[Dict[str, Any]] = field(init=False)
+
+    def __post_init__(self):
+        self.dice = [self.die_type() for _ in range(self.count)]
+
+    def roll(self) -> List[int]:
+        return [_.roll() for _ in self.dice]
+
+
 class RollManager():
     """
     example:
@@ -126,13 +141,13 @@ class RollManager():
         RollManager(dice).roll_with_advantage()
         RollManager(dice).roll_with_disadvantage()
     """
-    dice: list[Die]
+    dice: List[Die]
 
-    def __init__(self, dice: list[Die]):
+    def __init__(self, dice: List[Die]):
         self.dice = dice
         self.die_type = self.dice[0]
 
-    def print_roll_results(self, message: str, results: list[int]) -> None:
+    def print_roll_results(self, message: str, results: List[int]) -> None:
         print(f"{message}:")
         print(",".join(str(num) for num in results))
 

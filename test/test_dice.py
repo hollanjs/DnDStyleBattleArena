@@ -1,7 +1,7 @@
 import unittest
 from typing import Type
 
-from src.Dice import Die
+from src.Dice import Die, Dice
 from src.Dice import FourSidedDie, SixSidedDie, EightSidedDie, TenSidedDie, TwelveSidedDie, TwentySidedDie, OneHundredSidedDie
 
 
@@ -223,8 +223,49 @@ class DieMethodTestCases(unittest.TestCase):
         self.assertEqual(19 / self.twenty_sided_a, 3)
 
     
+    @unittest.skip("no known need to implement ceiling logic yet...")
     def test_setting_ceiling_divide(self):
         raise NotImplementedError("Create tests for test_setting_ceiling_divide")
+
+
+class DiceTests(unittest.TestCase):
+    def setUp(self):
+        self.dice = Dice(die_type=SixSidedDie, count=3)
+
+    def test_dice_init(self):
+        self.assertIsInstance(self.dice, Dice)
+
+    def test_dice_count(self):
+        self.assertEqual(len(self.dice.dice), 3)
+        with self.assertRaises(IndexError):
+            self.dice.dice[3]
+    
+    def test_dice_initial_state(self):
+        self.assertIsInstance(self.dice.dice[0], SixSidedDie)
+        self.assertIsInstance(self.dice.dice[1], SixSidedDie)
+        self.assertIsInstance(self.dice.dice[2], SixSidedDie)
+        self.assertEqual(self.dice.dice[0].rolled, 0)
+        self.assertEqual(self.dice.dice[1].rolled, 0)
+        self.assertEqual(self.dice.dice[2].rolled, 0)
+        
+    def test_rolling_dice(self):
+        rolled = self.dice.roll()
+        
+        #validate roll return
+        self.assertEqual(len(rolled), 3)
+        self.assertIsInstance(rolled[0], int)
+        self.assertIsInstance(rolled[1], int)
+        self.assertIsInstance(rolled[2], int)
+        self.assertGreater(rolled[0], 0)
+        self.assertGreater(rolled[1], 0)
+        self.assertGreater(rolled[2], 0)
+
+        #validate dice update within dice object
+        self.assertGreater(self.dice.dice[0].rolled, 0)
+        self.assertGreater(self.dice.dice[1].rolled, 0)
+        self.assertGreater(self.dice.dice[2].rolled, 0)
+
+        
 
 
 class TestRollManager(unittest.TestCase):
