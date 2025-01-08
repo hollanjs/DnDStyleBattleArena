@@ -5,15 +5,17 @@ from enum import Enum
 import random
 
 
-FighterAwareness = Enum("FighterAwareness", ['FOCUSED', 'PRESENT', 'DISTRACTED'])
+FighterAwareness = Enum("FighterAwareness", [
+                        'FOCUSED', 'PRESENT', 'DISTRACTED'])
+
 
 class Fighter:
-    #general
+    # general
     name: str
     hp: int
     attacks: list[Attack]
 
-    #ability scores
+    # ability scores
     strength: int
     dexterity: int
     constitution: int
@@ -21,16 +23,14 @@ class Fighter:
     wisdom: int
     charisma: int
 
-    #used for checks
+    # used for checks
     _distracted_chance: float
     _focused_chance: float
     _present_chance: float
     _awareness: FighterAwareness
 
-    #other
+    # other
     d20: TwentySidedDie
-
-
 
     def __init__(self, name: str, hp: int):
         self.name = name
@@ -38,9 +38,10 @@ class Fighter:
         self.attacks = []
         self.d20 = TwentySidedDie()
         self._awareness = FighterAwareness.PRESENT
-        self._distracted_chance = random.randrange(1,4)/10
-        self._focused_chance = random.randrange(1,4)/10
-        self._present_chance = 1.0 - (self._distracted_chance + self._focused_chance)
+        self._distracted_chance = random.randrange(1, 4)/10
+        self._focused_chance = random.randrange(1, 4)/10
+        self._present_chance = 1.0 - \
+            (self._distracted_chance + self._focused_chance)
 
     @staticmethod
     def score_to_modifier(score: int) -> int:
@@ -49,16 +50,18 @@ class Fighter:
         Uses the standard 5e formula: (score - 10) // 2
         """
         return (score - 10) // 2
-    
+
     @staticmethod
     def roll_init_stat() -> int:
         rolls = [r.roll() for r in [SixSidedDie() for _ in range(4)]]
 
     def update_awareness(self) -> None:
-        weights = [self._focused_chance, self._present_chance, self._distracted_chance]
+        weights = [self._focused_chance,
+                   self._present_chance, self._distracted_chance]
 
         current_awareness = self._awareness
-        new_awareness = random.choices(list(FighterAwareness), weights=weights, k=1)[0]
+        new_awareness = random.choices(
+            list(FighterAwareness), weights=weights, k=1)[0]
 
         if new_awareness != current_awareness:
             self.set_awareness(new_awareness)

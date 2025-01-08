@@ -4,19 +4,20 @@ from Fighters import Fighter, FighterAwareness
 import random
 
 
-
 class BattleMediator:
     _battle_in_progress = False
     _instance = None
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(BattleMediator, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super(BattleMediator, cls).__new__(
+                cls, *args, **kwargs)
         return cls._instance
 
     @staticmethod
     def print_fighter_status(fighters: tuple[Fighter, ...]) -> None:
-        print("  ---v---   ".join([f"{f.name} ({f._awareness.name}): {f.hp} HP" for f in fighters]))
+        print(
+            "  ---v---   ".join([f"{f.name} ({f._awareness.name}): {f.hp} HP" for f in fighters]))
         print()
 
     @staticmethod
@@ -47,7 +48,8 @@ class BattleMediator:
         defense_roll = defender.roll_d20()
 
         if attack_roll > defense_roll:
-            print(f"{attacker.name} hit {defender.name} with {attack.name} (rolling for damage)")
+            print(f"{attacker.name} hit {defender.name} with {
+                  attack.name} (rolling for damage)")
             match attacker._awareness:
                 case FighterAwareness.FOCUSED:
                     damage = attacker.attack_with_advantage(attack)
@@ -56,14 +58,16 @@ class BattleMediator:
                 case _:
                     damage = attacker.attack(attack)
 
-            print(f"{attacker.name}'s {attack.name} caused {damage} damage to {defender.name}")
+            print(f"{attacker.name}'s {attack.name} caused {
+                  damage} damage to {defender.name}")
             defender.hp -= damage
         else:
             print(f"{attacker.name} missed {defender.name} with {attack.name}")
 
         if defender.hp <= 0:
             BattleMediator.end_battle()
-            print(f"{defender.name} has perished in battle against {attacker.name}")
+            print(f"{defender.name} has perished in battle against {
+                  attacker.name}")
 
     @staticmethod
     def battle(fighter1: Fighter, fighter2: Fighter):
@@ -71,8 +75,7 @@ class BattleMediator:
         attacker, defender = BattleMediator.roll_initiative(fighter1, fighter2)
         while BattleMediator._battle_in_progress:
             attacker.update_awareness()
-            BattleMediator.attack(attacker, defender, random.choice(attacker.attacks))
+            BattleMediator.attack(attacker, defender,
+                                  random.choice(attacker.attacks))
             BattleMediator.print_fighter_status((attacker, defender))
             attacker, defender = defender, attacker
-
-

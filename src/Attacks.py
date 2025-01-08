@@ -34,42 +34,50 @@ class Attack(ABC):
         return sum(results)
 
     def roll_damage_with_advantage(self) -> int:
-        results = self.check_advantage([d.roll() for d in self.dice_with_extra_die()])
+        results = self.check_advantage(
+            [d.roll() for d in self.dice_with_extra_die()])
         self.print_roll_results("Role results after advantage", results)
         return sum(results)
 
     def roll_damage_with_disadvantage(self) -> int:
-        results = self.check_disadvantage([d.roll() for d in self.dice_with_extra_die()])
+        results = self.check_disadvantage(
+            [d.roll() for d in self.dice_with_extra_die()])
         self.print_roll_results("Role results after disadvantage", results)
         return sum(results)
 
     def __str__(self):
         return f'Attack({self.name}, damage: {len(self.dice)}{self.dice[0].name})'
 
+
 class Fireball(Attack):
     def __init__(self):
         self.name = "Fireball"
         self.dice = [SixSidedDie() for _ in range(8)]
+
 
 class AcidSplash(Attack):
     def __init__(self):
         self.name = "Acid Splash"
         self.dice = [SixSidedDie() for _ in range(4)]
 
+
 class EldritchBlast(Attack):
     def __init__(self):
         self.name = "Eldritch Blast"
         self.dice = [TenSidedDie() for _ in range(1)]
+
 
 class PoisonSpray(Attack):
     def __init__(self):
         self.name = "PoisonSpray"
         self.dice = [TwelveSidedDie() for _ in range(4)]
 
+
 class Thunderclap(Attack):
     def __init__(self):
         self.name = "Thunderclap"
         self.dice = [SixSidedDie() for _ in range(4)]
+
 
 class ThornWhip(Attack):
     def __init__(self):
