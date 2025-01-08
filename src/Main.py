@@ -9,7 +9,7 @@ def main():
 
     # create available attack pool
     available_attacks = [Fireball, AcidSplash,
-                        EldritchBlast, PoisonSpray, Thunderclap, ThornWhip]
+                         EldritchBlast, PoisonSpray, Thunderclap, ThornWhip]
 
     # train fighters
     for attack in available_attacks:

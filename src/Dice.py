@@ -4,6 +4,7 @@ from typing import Self, List, Dict, Any
 import random
 import uuid
 import copy
+import logging
 
 
 random.seed(int(uuid.uuid4()))
@@ -141,16 +142,19 @@ class Dice():
     roll_history: List[List[Die]] = field(init=False, repr=False)
 
     def __str__(self) -> str:
-        return self.pprint_dice(self.current_roll)
+        return self.pprint_str(self.current_roll)
 
     def __post_init__(self) -> None:
         self.dice = [self.die_type() for _ in range(self.count)]
         self.roll_history = [copy.deepcopy(self.dice)]
 
     @classmethod
+    def pprint_str(self, dice: List[Die]) -> str:
+        return f"{len(dice)}{dice[0].name}, [{", ".join([str(d.rolled) for d in dice])}]"
+
+    @classmethod
     def pprint_dice(self, dice: List[Die]) -> None:
-        print(f"{len(dice)}{dice[0].name}, [{
-              ", ".join([str(d.rolled) for d in dice])}]")
+        print(self.pprint_str(dice))
 
     def pprint_roll_history(self) -> None:
         for roll in self.roll_history:
@@ -167,6 +171,14 @@ class Dice():
         else:
             raise IndexError(
                 "Not enough roll history to obtain a previous roll. Roll the dice, then try previous_roll() again")
+
+    @property
+    def current_total(self) -> int:
+        return sum(self.current_roll)
+
+    @property
+    def previous_total(self) -> int:
+        return sum(self.previous_roll)
 
     def __len__(self) -> int:
         return len(self.dice)
@@ -188,8 +200,15 @@ class RollManager():
     """
     dice: List[Die]
 
-    def __init__(self, dice: List[Die]):
-        self.dice = dice
+    def __init__(self, dice: (Dice | Die)) -> None:
+        if isinstance(dice, Die):
+            self.dice = [dice]
+        elif isinstance(dice, Dice):
+            self.dice = dice
+        else:
+            raise TypeError(
+                "RollManager's constructor requires input be of type 'Die' or 'Dice'")
+
         self.die_type = self.dice[0]
 
     def print_roll_results(self, message: str, results: List[int]) -> None:
