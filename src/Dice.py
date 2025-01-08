@@ -148,6 +148,12 @@ class Dice():
         self.dice = [self.die_type() for _ in range(self.count)]
         self.roll_history = [copy.deepcopy(self.dice)]
 
+    def __len__(self) -> int:
+        return len(self.dice)
+
+    def __iter__(self):
+        return iter(self.dice)
+
     @classmethod
     def pprint_str(self, dice: List[Die]) -> str:
         return f"{len(dice)}{dice[0].name}, [{", ".join([str(d.rolled) for d in dice])}]"
@@ -180,11 +186,9 @@ class Dice():
     def previous_total(self) -> int:
         return sum(self.previous_roll)
 
-    def __len__(self) -> int:
-        return len(self.dice)
-
     def roll(self) -> List[int]:
-        [_.roll() for _ in self.dice]
+        for die in self.dice:
+            die.roll()
         self.roll_history.append(copy.deepcopy(self.dice))
         return self.current_roll
 
