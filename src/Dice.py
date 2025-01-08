@@ -2,6 +2,17 @@
 This module defines classes for dice-based rolling mechanics, including a base Die class
 and its specific subclasses (e.g., FourSidedDie, SixSidedDie, etc.), as well as a Dice
 container class that manages multiple dice and maintains their roll history.
+
+TODO:
+[ ] add method to alter roll history by index
+[ ] update rollmanager to use dice alter history by index to replace roll histories
+    with extra dice (roll with advantage/disadvantage) to reflect roll after
+    the extra dice are removed
+[ ] add rollmanager method to roll multiple dice objects and return roll totals
+    use case: DnD where you need to roll  a weapon with a modifier, ex
+        3d6, 2d8
+[ ] add functionality for roll manager to work with dice roll history
+
 """
 
 from abc import ABC
