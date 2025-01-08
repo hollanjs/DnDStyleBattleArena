@@ -355,79 +355,158 @@ class Dice:
         return self.current_roll
 
 
-"""
-fix rollmanager class
-"""
-# class RollManager():
-#     """
-#     example:
-#         dice = [SixSidedDie() for _ in range(4)]
+class RollManager:
+    """
+    Manages rolling logic for one or more dice, supporting regular rolls, advantage, and disadvantage.
 
-#         RollManager(dice).roll()
-#         RollManager(dice).roll_with_advantage()
-#         RollManager(dice).roll_with_disadvantage()
-#     """
-#     dice: Type[Dice]
+    Example usage:
+        single_die = SixSidedDie()
+        multiple_dice = Dice(die_type=SixSidedDie, count=4)
 
-#     def __init__(self, dice: (Dice | Die)) -> None:
-#         if isinstance(dice, Die):
-#             self.dice = [dice]
-#         elif isinstance(dice, Dice):
-#             self.dice = dice
-#         else:
-#             raise TypeError(
-#                 "RollManager's constructor requires input be of type 'Die' or 'Dice'")
+        # RollManager can accept either a single Die or a Dice object.
+        RollManager(single_die).roll()
+        RollManager(multiple_dice).roll_with_advantage()
+        RollManager(multiple_dice).roll_with_disadvantage()
+    """
 
-#         self.die_type = self.dice[0]
+    def __init__(self, dice: Die | Dice) -> None:
+        """
+        Initializes the RollManager with one or more dice.
 
-#     def print_roll_results(self, message: str, results: List[int]) -> None:
-#         print(f"{message}:")
-#         print(",".join(str(num) for num in results))
+        Args:
+            dice (Die | Dice): Either a single Die instance or a Dice container instance.
 
-#     def add_die_to_roll(self) -> Self:
-#         print
-#         die_type = type(self.dice[0])
-#         self.dice.append(die_type())
-#         return self
+        Raises:
+            TypeError: If the argument is neither a Die nor a Dice instance.
+        """
+        # Internally, always store a list of Die objects for consistent handling.
+        if isinstance(dice, Die):
+            self._dice_list: List[Die] = [dice]
+        elif isinstance(dice, Dice):
+            self._dice_list: List[Die] = dice.dice
+        else:
+            raise TypeError(
+                "RollManager's constructor requires input be of type 'Die' or 'Dice'")
 
-#     def roll_dice(self) -> Self:
-#         print(f"rolling {len(self.dice)}{self.dice[0].name}")
-#         self.print_roll_results("results", [d.roll() for d in self.dice])
-#         return self
+    def print_roll_results(self, message: str, results: List[int]) -> None:
+        """
+        Prints the results of the most recent roll.
 
-#     def get_roll_total(self) -> int:
-#         roll_total = sum([d.rolled for d in self.dice])
-#         print(f"total rolled: {roll_total}  ({
-#               " + ".join([str(d.rolled) for d in self.dice])})")
-#         return roll_total
+        Args:
+            message (str): A label or description to print before the roll results.
+            results (List[int]): The list of rolled values to display.
+        """
+        print(f"{message}:")
+        print(",".join(str(num) for num in results))
 
-#     def remove_lowest_roll(self) -> Self:
-#         lowest = min(self.dice, key=lambda d: d.rolled)
-#         print(f"removing lowest roll: {lowest.rolled}")
-#         self.dice.remove(lowest)
-#         return self
+    def add_die_to_roll(self) -> Self:
+        """
+        Creates one additional die of the same type as the first die in the internal list
+        and appends it to the roll pool.
 
-#     def remove_highest_roll(self) -> Self:
-#         highest = max(self.dice, key=lambda d: d.rolled)
-#         print(f"removing highest roll: {highest.rolled}")
-#         self.dice.remove(highest)
-#         return self
+        Returns:
+            Self: The RollManager instance, to allow method chaining.
+        """
+        if not self._dice_list:
+            raise ValueError(
+                "Cannot add a die when no dice exist in RollManager.")
+        die_type = type(self._dice_list[0])
+        self._dice_list.append(die_type())
+        return self
 
-#     def roll_with_advantage(self) -> int:
-#         print(f"Adding an additional {
-#               self.dice[0].name} to roll with advantage")
-#         self.add_die_to_roll()          \
-#             .roll_dice()                \
-#             .remove_lowest_roll()       \
-#             .get_roll_total()
+    def roll_dice(self) -> Self:
+        """
+        Rolls all dice currently managed by this RollManager and prints the results.
 
-#     def roll_with_disadvantage(self) -> int:
-#         print(f"Adding an additional {
-#               self.dice[0].name} to roll with disadvantage")
-#         self.add_die_to_roll()          \
-#             .roll_dice()                \
-#             .remove_highest_roll()      \
-#             .get_roll_total()
+        Returns:
+            Self: The RollManager instance, to allow method chaining.
+        """
+        if not self._dice_list:
+            raise ValueError("No dice to roll.")
+        print(f"Rolling {len(self._dice_list)}{self._dice_list[0].name}")
+        rolled_values = [die.roll() for die in self._dice_list]
+        self.print_roll_results("results", rolled_values)
+        return self
 
-#     def roll(self) -> int:
-#         self.roll_dice().get_roll_total()
+    def get_roll_total(self) -> int:
+        """
+        Calculates the sum of the most recent rolled values of all dice.
+
+        Returns:
+            int: The total of all dice's rolled values.
+        """
+        roll_total = sum(die.rolled for die in self._dice_list)
+        dice_rolls_str = " + ".join(str(die.rolled) for die in self._dice_list)
+        print(f"total rolled: {roll_total}  ({dice_rolls_str})")
+        return roll_total
+
+    def remove_lowest_roll(self) -> Self:
+        """
+        Removes the die that has the lowest rolled value from the set of dice.
+
+        Returns:
+            Self: The RollManager instance, to allow method chaining.
+        """
+        if not self._dice_list:
+            raise ValueError("No dice to remove from.")
+        lowest = min(self._dice_list, key=lambda d: d.rolled)
+        print(f"removing lowest roll: {lowest.rolled}")
+        self._dice_list.remove(lowest)
+        return self
+
+    def remove_highest_roll(self) -> Self:
+        """
+        Removes the die that has the highest rolled value from the set of dice.
+
+        Returns:
+            Self: The RollManager instance, to allow method chaining.
+        """
+        if not self._dice_list:
+            raise ValueError("No dice to remove from.")
+        highest = max(self._dice_list, key=lambda d: d.rolled)
+        print(f"removing highest roll: {highest.rolled}")
+        self._dice_list.remove(highest)
+        return self
+
+    def roll_with_advantage(self) -> int:
+        """
+        Performs a roll with advantage by adding one extra die, rolling all dice,
+        then removing the lowest roll, and finally returning the total of the remaining dice.
+
+        Returns:
+            int: The total of the dice after rolling with advantage.
+        """
+        print(f"Adding an additional {
+              self._dice_list[0].name} to roll with advantage")
+        return (
+            self.add_die_to_roll()
+                .roll_dice()
+                .remove_lowest_roll()
+                .get_roll_total()
+        )
+
+    def roll_with_disadvantage(self) -> int:
+        """
+        Performs a roll with disadvantage by adding one extra die, rolling all dice,
+        then removing the highest roll, and finally returning the total of the remaining dice.
+
+        Returns:
+            int: The total of the dice after rolling with disadvantage.
+        """
+        print(f"Adding an additional {
+              self._dice_list[0].name} to roll with disadvantage")
+        return (
+            self.add_die_to_roll()
+                .roll_dice()
+                .remove_highest_roll()
+                .get_roll_total()
+        )
+
+    def roll(self) -> int:
+        """
+        Performs a normal roll of all existing dice and returns the total of their rolled values.
+
+        Returns:
+            int: The total of the rolled values for the current dice pool.
+        """
+        return self.roll_dice().get_roll_total()
