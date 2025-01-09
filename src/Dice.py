@@ -12,7 +12,7 @@ TODO:
     use case: DnD where you need to roll  a weapon with a modifier, ex
         3d6, 2d8
 [ ] add functionality for roll manager to work with dice roll history
-
+[ ] read through and update ai generated docstrings where necessary
 """
 
 from abc import ABC
